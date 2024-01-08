@@ -30,18 +30,29 @@ STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 connection_string = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
 parameters = {str(pair.split('=')[0]): pair.split('=')[1] for pair in connection_string.split(' ')}
 
-DATABASES = {
+# DATABASES = {
     
-    'default':{
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME' :parameters['dbname'],
-        'HOST':parameters['host'],
-        'USER':parameters['user'],
-        'PASSWORD':parameters['password'],
+#     'default':{
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME' :parameters['dbname'],
+#         'HOST':parameters['host'],
+#         'USER':parameters['user'],
+#         'PASSWORD':parameters['password'],
             
-    }
-}
+#     }
+# }
 
+DATABASES={
+   'default':{
+      'ENGINE':'django.db.backends.postgresql_psycopg2',
+      'NAME':os.getenv('DATABASE_NAME'),
+      'USER':os.getenv('DATABASE_USER'),
+      'PASSWORD':os.getenv('DATABASE_PASSWORD'),
+      'HOST':os.getenv('DATABASE_HOST'),
+      'PORT':'5432',
+      'OPTIONS': {'sslmode': 'require'}
+   }
+}
 
 # DATABASES = {
     
