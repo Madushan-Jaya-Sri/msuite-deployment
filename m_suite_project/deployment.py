@@ -29,38 +29,22 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
-# conn_str = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
+conn_str = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
 
 
-# in your setting file, eg. settings.py
-host = os.getenv('AZURE_POSTGRESQL_HOST')
-user = os.getenv('AZURE_POSTGRESQL_USER')
-password = os.getenv('AZURE_POSTGRESQL_PASSWORD')
-database = os.getenv('AZURE_POSTGRESQL_NAME')
 
+
+
+conn_str_params = {str(pair.split('=')[0]): pair.split('=')[1] for pair in conn_str.split(' ')}
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': database,
-        'USER': user,
-        'PASSWORD': password,
-        'HOST': host,
-        'PORT': '5432',  # Port is 5432 by default 
-        'OPTIONS': {'sslmode': 'require'},
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': conn_str_params['dbname'],
+        'HOST': conn_str_params['host'],
+        'USER': conn_str_params['user'],
+        'PASSWORD': conn_str_params['password'],
     }
 }
-
-
-# conn_str_params = {str(pair.split('=')[0]): pair.split('=')[1] for pair in conn_str.split(' ')}
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': conn_str_params['dbname'],
-#         'HOST': conn_str_params['host'],
-#         'USER': conn_str_params['user'],
-#         'PASSWORD': conn_str_params['password'],
-#     }
-# }
 
 # STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
 
