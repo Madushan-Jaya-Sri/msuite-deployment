@@ -25,43 +25,59 @@ MIDDLEWARE = [
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-connection_string = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
-parameters = {str(pair.split('=')[0]): pair.split('=')[1] for pair in connection_string.split(' ')}
 
-# DATABASES = {
-    
-#     'default':{
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME' :parameters['dbname'],
-#         'HOST':parameters['host'],
-#         'USER':parameters['user'],
-#         'PASSWORD':parameters['password'],
-            
-#     }
-# }
-
-DATABASES={
-   'default':{
-      'ENGINE':'django.db.backends.postgresql_psycopg2',
-      'NAME':os.getenv('DATABASE_NAME'),
-      'USER':os.getenv('DATABASE_USER'),
-      'PASSWORD':os.getenv('DATABASE_PASSWORD'),
-      'HOST':os.getenv('DATABASE_HOST'),
-      'PORT':'5432',
-      'OPTIONS': {'sslmode': 'require'}
-   }
+conn_str = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
+conn_str_params = {pair.split('=')[0]: pair.split('=')[1] for pair in conn_str.split(' ')}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': conn_str_params['dbname'],
+        'HOST': conn_str_params['host'],
+        'USER': conn_str_params['user'],
+        'PASSWORD': conn_str_params['password'],
+    }
 }
 
-# DATABASES = {
+# STATIC_ROOT = os.path.join(BASE_DIR,'staticfiles')
+
+# connection_string = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
+# parameters = {str(pair.split('=')[0]): pair.split('=')[1] for pair in connection_string.split(' ')}
+
+# # DATABASES = {
     
-#     'default':{
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME' :'demo-sandbox',
-#         'HOST':'demo-sandbox.postgres.database.azure.com',
-#         'USER':'madushanjaysri',
-#         'PASSWORD':'@Jayaz1996',
+# #     'default':{
+# #         'ENGINE': 'django.db.backends.postgresql',
+# #         'NAME' :parameters['dbname'],
+# #         'HOST':parameters['host'],
+# #         'USER':parameters['user'],
+# #         'PASSWORD':parameters['password'],
             
-#     }
+# #     }
+# # }
+
+# DATABASES={
+#    'default':{
+#       'ENGINE':'django.db.backends.postgresql_psycopg2',
+#       'NAME':os.getenv('DATABASE_NAME'),
+#       'USER':os.getenv('DATABASE_USER'),
+#       'PASSWORD':os.getenv('DATABASE_PASSWORD'),
+#       'HOST':os.getenv('DATABASE_HOST'),
+#       'PORT':'5432',
+#       'OPTIONS': {'sslmode': 'require'}
+#    }
 # }
+
+# # DATABASES = {
+    
+# #     'default':{
+# #         'ENGINE': 'django.db.backends.postgresql',
+# #         'NAME' :'demo-sandbox',
+# #         'HOST':'demo-sandbox.postgres.database.azure.com',
+# #         'USER':'madushanjaysri',
+# #         'PASSWORD':'@Jayaz1996',
+            
+# #     }
+# # }
