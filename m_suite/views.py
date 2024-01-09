@@ -430,7 +430,7 @@ def proceed_yt_url(request):
             
             about = driver.find_elements(By.XPATH, '//*[@id="contents"]')
             #about = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="contents"]')))
-            driver.save_screenshot('screenshot2.png') 
+            # driver.save_screenshot('screenshot2.png') 
             
             text = about[-1].text
             print(text)
