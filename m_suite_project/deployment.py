@@ -43,7 +43,7 @@ DATABASES = {
         'HOST': 'momentrosuite-server.postgres.database.azure.com',
         'PORT': '5432',
         'USER': 'wfdfblpion',
-        'PASSWORD': 'N78SRBM56II2Q33C',
+        'PASSWORD': 'N78SRBM56II2Q33C$',
     }
 }
 

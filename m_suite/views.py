@@ -2,6 +2,8 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.contrib import messages
+from .logger import logging
+
 
 # Data manipulation and analysis
 import pandas as pd
@@ -387,7 +389,7 @@ def proceed_yt_url(request):
     
     # Set Chrome options to disable notifications
     chrome_options = Options()
-    chrome_options.add_argument('--headless')
+    #chrome_options.add_argument('--headless')
 
     chrome_options.add_experimental_option("prefs", {
         "profile.default_content_setting_values.notifications": 2
@@ -423,14 +425,12 @@ def proceed_yt_url(request):
             
             about = driver.find_elements(By.XPATH, '//*[@id="contents"]')
             text = about[-1].text
-
+            logging.info(f'Text : {text}')
             lines = text.strip().split('\n')
             join_date_line = lines[-3].strip() if lines else "Joined date not found"
             join_date = join_date_line.replace("Joined ", "") if "Joined" in join_date_line else "Join date not found."
 
-            # Assuming 'text' contains the information about subscribers
-            pattern2_1 = r"(\d+)K subscribers"
-            pattern2_2 = r"(\d+)M subscribers"
+
 
             
             # Extract the number of videos
@@ -452,12 +452,14 @@ def proceed_yt_url(request):
 
 
 
+
             pattern2_1 = r"([\d.]+)K subscribers"
             pattern2_2 = r"([\d.]+)M subscribers"
-            
-            combined_pattern = f"{pattern2_1}|{pattern2_2}"
+            pattern3 = r"([\d.]+) subscribers"
+
+            combined_pattern = f"{pattern2_1}|{pattern2_2}|{pattern3}"
             match = re.search(combined_pattern, text)
-            
+
             if match:
                 if 'K' in match.group(0):
                     subscribers_str = match.group(1)
@@ -465,6 +467,9 @@ def proceed_yt_url(request):
                 elif 'M' in match.group(0):
                     subscribers_str = match.group(2)
                     subscribers = int(float(subscribers_str) * 1000000)
+                else:
+                    subscribers_str = match.group(3)
+                    subscribers = int(float(subscribers_str))
             else:
                 subscribers = None
 
