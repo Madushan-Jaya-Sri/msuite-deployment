@@ -33,16 +33,17 @@ conn_str = os.environ['AZURE_POSTGRESQL_CONNECTIONSTRING']
 
 
 
+#dbname=momentrosuite-database host=momentrosuite-server.postgres.database.azure.com port=5432 sslmode=require user=wfdfblpion password=N78SRBM56II2Q33C$
 
-
-conn_str_params = {str(pair.split('=')[0]): pair.split('=')[1] for pair in conn_str.split(' ')}
+#conn_str_params = {str(pair.split('=')[0]): pair.split('=')[1] for pair in conn_str.split(' ')}
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': conn_str_params['dbname'],
-        'HOST': conn_str_params['host'],
-        'USER': conn_str_params['user'],
-        'PASSWORD': conn_str_params['password'],
+        'NAME': 'momentrosuite-database',
+        'HOST': 'momentrosuite-server.postgres.database.azure.com',
+        'PORT': '5432',
+        'USER': 'wfdfblpion',
+        'PASSWORD': 'N78SRBM56II2Q33C',
     }
 }
 

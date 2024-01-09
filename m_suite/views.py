@@ -19,7 +19,9 @@ from urllib.parse import urlparse, urljoin
 
 # Natural Language Processing
 import re
+import nltk
 from nltk.corpus import stopwords
+nltk.download('stopwords')
 from collections import Counter
 
 # Data visualization
@@ -385,6 +387,8 @@ def proceed_yt_url(request):
     
     # Set Chrome options to disable notifications
     chrome_options = Options()
+    chrome_options.add_argument('--headless')
+
     chrome_options.add_experimental_option("prefs", {
         "profile.default_content_setting_values.notifications": 2
     })
