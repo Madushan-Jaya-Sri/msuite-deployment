@@ -191,8 +191,8 @@ def extract_links(request):
     
     print(keyword_df)
     
-    keyword_list = keyword_df.iloc[0:9,:].to_dict(orient='records')
-    keyword_list_bar = keyword_df.to_dict(orient='records')
+    keyword_list_bar = keyword_df.iloc[0:9,:].to_dict(orient='records')
+    #keyword_list_bar = keyword_df.to_dict(orient='records')
 
     
   
@@ -216,7 +216,7 @@ def extract_links(request):
     #KeywordCountData.objects.bulk_create([KeywordCountData(**data) for data in keyword_df])
     #keyword_data_instance = KeywordCountData.objects.create(Keyword=keyword_df['Keyword'], Count=keyword_df['Count'])
 
-    return render(request,"website_keyword.html",{'given_url': output_url, 'keyword_list': keyword_list, 'keyword_list_bar':keyword_list,
+    return render(request,"website_keyword.html",{'given_url': output_url, 'keyword_list': keyword_list_bar, 'keyword_list_bar':keyword_list_bar,
                                         'wordcloud_image': wordcloud_image, 'keyword_df': keyword_df}
     )    
     #return render(request,"index.html",{'given_url':output_url,'keyword_list': keyword_list})
@@ -389,7 +389,9 @@ def proceed_yt_url(request):
     
     # Set Chrome options to disable notifications
     chrome_options = Options()
-    #chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--lang=en')
+    chrome_options.add_argument('--headless')
+    
 
     chrome_options.add_experimental_option("prefs", {
         "profile.default_content_setting_values.notifications": 2
@@ -413,7 +415,7 @@ def proceed_yt_url(request):
             # Get the channel name
             channel_name_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="channel-name"]')))
             channel_name = channel_name_element.text
-
+            print(channel_name)
 
             pro_pic = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ' //*[@id="img"]')))
             image = pro_pic.get_attribute("src")
@@ -423,9 +425,13 @@ def proceed_yt_url(request):
         
             time.sleep(3)
             
-            about = driver.find_elements(By.XPATH, '//*[@id="contents"]')
+            #about = driver.find_elements(By.XPATH, '//*[@id="contents"]')
+            about = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="contents"]')))
+            driver.save_screenshot('screenshot.png') 
+            print(about.text)
             text = about[-1].text
-            logging.info(f'Text : {text}')
+            print(text)
+            #logging.info(f'Text : {text}')
             lines = text.strip().split('\n')
             join_date_line = lines[-3].strip() if lines else "Joined date not found"
             join_date = join_date_line.replace("Joined ", "") if "Joined" in join_date_line else "Join date not found."
