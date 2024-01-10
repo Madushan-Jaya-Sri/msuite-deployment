@@ -384,15 +384,19 @@ def get_prediction(vectorized_text):
 
 def proceed_yt_url(request):
     
+    logging.info('driver openning ===========')
     channel_names = []
     video_titles = []
     
     # Set Chrome options to disable notifications
     chrome_options = Options()
-    chrome_options.add_argument('--lang=en')
-    chrome_options.add_argument('--headless')
     
-
+    logging.info('driver openning =========== in headless mode')
+    
+    # chrome_options.add_argument('--headless')
+    # chrome_options.add_argument("--lang=en-US")
+    
+    logging.info('driver run successfully ===========')
     chrome_options.add_experimental_option("prefs", {
         "profile.default_content_setting_values.notifications": 2
     })
@@ -406,6 +410,8 @@ def proceed_yt_url(request):
     if request.method == "POST":
         yt_url = request.POST.get('yt_url')
         
+        logging.info(f'yt_url : {yt_url}')
+        
         urls = [yt_url]
         print(urls)
         
@@ -416,6 +422,7 @@ def proceed_yt_url(request):
             # Get the channel name
             channel_name_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="channel-name"]')))
             channel_name = channel_name_element.text
+            logging.info(f'channel_name : {channel_name}')
             print(channel_name)
 
             pro_pic = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ' //*[@id="img"]')))
@@ -423,6 +430,7 @@ def proceed_yt_url(request):
             
             details = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ' //*[@id="content"]')))
             details.click()
+            logging.info('=========   Element-about clicked==========')
             
             print(details.text)
             
