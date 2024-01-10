@@ -393,16 +393,23 @@ def proceed_yt_url(request):
     
     logging.info('driver openning =========== in headless mode')
     
-    # chrome_options.add_argument('--headless')
-    # chrome_options.add_argument("--lang=en-US")
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument("--lang=en-US")
     
     logging.info('driver run successfully ===========')
     chrome_options.add_experimental_option("prefs", {
         "profile.default_content_setting_values.notifications": 2
     })
 
+    # Specify the path to the ChromeDriver executable
+    chrome_driver_path = '/usr/local/bin/chromedriver'
+
+    # Initialize the Chrome WebDriver with the configured options and driver path
+    driver = webdriver.Chrome(executable_path=chrome_driver_path, options=chrome_options)
+
+
     # Initialize the Chrome WebDriver with the configured options
-    driver = webdriver.Chrome(options=chrome_options)
+     # driver = webdriver.Chrome(options=chrome_options)
     #driver.maximize_window()
 
     yt_url = "" 
