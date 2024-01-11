@@ -416,7 +416,7 @@ def proceed_yt_url(request):
     driver = webdriver.Chrome(service=service, options=options)
 
     # Initialize the Chrome WebDriver with the configured options
-     # driver = webdriver.Chrome(options=chrome_options)
+    # driver = webdriver.Chrome(options=chrome_options)
     # driver.maximize_window()
 
     yt_url = "" 
