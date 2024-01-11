@@ -402,11 +402,18 @@ def proceed_yt_url(request):
     })
 
     # Specify the path to the ChromeDriver executable
-    chrome_driver_path = '/usr/local/bin/chromedriver'
+    chrome_driver_path = '/usr/local/bin/chromedriver.exe'
 
     # Initialize the Chrome WebDriver with the configured options and driver path
-    driver = webdriver.Chrome(executable_path=chrome_driver_path, options=chrome_options)
+    
+    
+    #driver = webdriver.Chrome(executable_path=chrome_driver_path, options=chrome_options)
 
+
+
+    service = Service(executable_path=chrome_driver_path)
+    options = webdriver.ChromeOptions()
+    driver = webdriver.Chrome(service=service, options=options)
 
     # Initialize the Chrome WebDriver with the configured options
      # driver = webdriver.Chrome(options=chrome_options)
