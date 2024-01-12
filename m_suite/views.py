@@ -402,7 +402,7 @@ def proceed_yt_url(request):
     })
 
     # Specify the path to the ChromeDriver executable
-    chrome_driver_path = '/usr/local/bin/chromedriver.exe'
+    chrome_driver_path = '/usr/local/bin/chromedriver'
 
     # Initialize the Chrome WebDriver with the configured options and driver path
     
@@ -420,6 +420,7 @@ def proceed_yt_url(request):
     # driver.maximize_window()
 
     yt_url = "" 
+    
     
     if request.method == "POST":
         yt_url = request.POST.get('yt_url')
@@ -451,19 +452,19 @@ def proceed_yt_url(request):
             time.sleep(3)
             
             about = driver.find_elements(By.XPATH, '//*[@id="contents"]')
-            #about = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="contents"]')))
+            
+            # about = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="contents"]')))
             # driver.save_screenshot('screenshot2.png') 
             
             text = about[-1].text
             print(text)
+            
             #logging.info(f'Text : {text}')
             lines = text.strip().split('\n')
             join_date_line = lines[-3].strip() if lines else "Joined date not found"
             join_date = join_date_line.replace("Joined ", "") if "Joined" in join_date_line else "Join date not found."
 
 
-
-            
             # Extract the number of videos
             pattern3 = r"(\d+) videos"
             match = re.search(pattern3, text)
