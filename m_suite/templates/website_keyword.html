@@ -37,50 +37,56 @@
                   </div>
                   <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">               
                     
-                    <!-- Overview -->   
+                  
+                       <!-- Overview -->   
+  
+                       <a href="{% url 'overview' %}">
+                        <button class="nav-link " id="v-pills-overview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-overview" 
+                      type="button" role="tab" aria-controls="v-pills-overview" aria-selected="true"><img src="{% static 'images/1.png' %}" alt="" class="icon"> Overview</button>
+                      </a>   
+                              
+                      
+                      
+                      <!-- Website Keyword Analysis -->
+                      <a href="{% url 'website_keyword' %}">
+                        <button class="nav-link active" id="v-pills-website-keyword-tab" data-bs-toggle="pill" data-bs-target="/website-keyword"
+                        type="button" role="tab" aria-controls="v-pills-website-keyword" aria-selected="true"><img src="{% static 'images/2.png' %}"  alt="" class="icon">Website Keyword Analysis</button>
+                      </a>
+                      
+                      
+                      
+                      <!-- Setiment Analysis -->
+                      <a href="{% url 'sentiment_analysis' %}">
+                        <button class="nav-link" id="v-pills-sentiment-tab" data-bs-toggle="pill" data-bs-target="#v-pills-sentiment" 
+                      type="button" role="tab" aria-controls="v-pills-sentiment" aria-selected="false"><img src="{% static 'images/4.png' %}"  alt="" class="icon">Youtube Analyzer</button>
+                      </a>
                     
-                    <a href="{% url 'overview' %}">
-                      <button class="nav-link " id="v-pills-overview-tab" data-bs-toggle="pill" data-bs-target="#v-pills-overview" 
-                    type="button" role="tab" aria-controls="v-pills-overview" aria-selected="true"><img src="{% static 'images/1.png' %}" alt="" class="icon"> Overview</button>
-                    </a>   
-                            
-                    
-                    
-                    <!-- Website Keyword Analysis -->
-                    <a href="{% url 'website_keyword' %}">
-                      <button class="nav-link active" id="v-pills-website-keyword-tab" data-bs-toggle="pill" data-bs-target="/website-keyword"
-                     type="button" role="tab" aria-controls="v-pills-website-keyword" aria-selected="true"><img src="{% static 'images/2.png' %}"  alt="" class="icon">Website Keyword Analysis</button>
-                    </a>
-                    
-                    
-                     <!-- Brand Personility Audit -->
-                     <a href="{% url 'brand_personality' %}">
-                      <button class="nav-link" id="v-pills-brand-tab" data-bs-toggle="pill" data-bs-target="#v-pills-brand" 
-                    type="button" role="tab" aria-controls="v-pills-brand" aria-selected="false"><img src="{% static 'images/3.png' %}"  alt="" class="icon">Brand Personality Audit</button>
-                     </a>
-                    
-                    
-                    <!-- Setiment Analysis -->
-                    <a href="{% url 'sentiment_analysis' %}">
-                      <button class="nav-link" id="v-pills-sentiment-tab" data-bs-toggle="pill" data-bs-target="#v-pills-sentiment" 
-                    type="button" role="tab" aria-controls="v-pills-sentiment" aria-selected="false"><img src="{% static 'images/4.png' %}"  alt="" class="icon">Youtube Analyzer</button>
-                    </a>
-                    
-                    
-                    <!-- Profile Analyzer -->
-                    <a href="{% url 'profile_analyzer' %}">
-                      <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" 
-                    type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false"><img src="{% static 'images/5.png' %}"  alt="" class="icon">Profile Analyzer</button>
-                    </a>
-                    
-                    
-                    <!-- Brand Authority -->
-                    <a href="{% url 'brand_authority' %}">
-                      <button class="nav-link" id="v-pills-authority-tab" data-bs-toggle="pill" data-bs-target="#v-pills-authority" 
-                    type="button" role="tab" aria-controls="v-pills-authority" aria-selected="false"><img src="{% static 'images/6.png' %}"  alt="" class="icon">Brand Authority</button> 
-                    </a>
+                      <!-- Sentiments -->
+                      <a href="{% url 'sentiments' %}">
+                        <button class="nav-link" id="v-pills-sentiments-tab" data-bs-toggle="pill" data-bs-target="#v-pills-sentiments" 
+                      type="button" role="tab" aria-controls="v-pills-sentiments" aria-selected="false"><img src="{% static 'images/5.png' %}"  alt="" class="icon">Sentiments</button>
+                      </a>
+                      
+                      <!-- Brand Personility Audit -->
+                      <a href="{% url 'brand_personality' %}">
+                        <button class="nav-link" id="v-pills-brand-tab" data-bs-toggle="pill" data-bs-target="#v-pills-brand" 
+                      type="button" role="tab" aria-controls="v-pills-brand" aria-selected="false"><img src="{% static 'images/3.png' %}"  alt="" class="icon">Brand Personality Audit</button>
+                        </a>
+
+                                              
+                      <!-- Profile Analyzer -->
+                      <a href="{% url 'profile_analyzer' %}">
+                        <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" 
+                      type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false"><img src="{% static 'images/5.png' %}"  alt="" class="icon">Profile Analyzer</button>
+                      </a>
+                                              
+                      <!-- Brand Authority -->
+                      <a href="{% url 'brand_authority' %}">
+                        <button class="nav-link" id="v-pills-authority-tab" data-bs-toggle="pill" data-bs-target="#v-pills-authority" 
+                      type="button" role="tab" aria-controls="v-pills-authority" aria-selected="false"><img src="{% static 'images/6.png' %}"  alt="" class="icon">Brand Authority</button> 
+                      </a>
                      
-    
+        
         
                   </div>
                   <div class="bottom-image">
@@ -93,28 +99,7 @@
             <div class="col-12 col-md-9 col-lg-9">
               <div class="tab-content" id="v-pills-tabContent">
             
-                <!-- Overview -->
-                <div class="tab-pane fade " id="v-pills-overview" role="tabpanel" aria-labelledby="v-pills-overview-tab">
-                  <div class="row">
-                    <div class="col-12 col-md-10 col-lg-10">
-                      <div class="title">
-                        <h2 class="website-title">
-                          Overview
-                        </h2>
-                      </div>
-                    </div>
-                    <div class="col-12 col-md-2 col-lg-2">
-                      <div class="user">
-                        <img src="{% static 'images/user.png' %}"  alt="" class="aveter">
-                       </div>
-                    </div>
-                  </div>
-                  <div class="div">
-                    <h1>
-                      Comming Soon
-                    </h1>
-                  </div>
-                </div>
+
                 
                 <!-- Website Keyword Analysis -->
                 <div class="tab-pane fade show active" id="v-pills-website-keyword" role="tabpanel" aria-labelledby="v-pills-website-keyword-tab">
@@ -124,7 +109,13 @@
                         <div class="title">
                           <h2 class="website-title">
                             Website Keyword Analysis
-                          </h2>
+                          
+
+                          <form id="historyForm" method="POST" action="{% url 'history' %}">
+                            {% csrf_token %}
+                            <img src="{% static 'images/histry.png' %}" alt="" class="history-button" onclick="submitForm()" type='button'>
+                          </form>
+                        </h2>
                         </div>
                       </div>
                       <div class="col-12 col-md-2 col-lg-2">
@@ -228,7 +219,10 @@
                           </div>
                         </div>
                         <div class="image">
+
+                          <a href='https://wordart.com/edit/hod5hgvuz8bi'>
                           <img class="cloud-image img-fluid" src="data:image/png;base64,{{ wordcloud_image }}" alt="">
+                          </a>
                         </div>
 
                       </div>
@@ -473,6 +467,12 @@
       barPercentage: 6,
       categoryPercentage: 1,
     });
+</script>
+
+<script>
+  function submitForm() {
+      document.getElementById('historyForm').submit();
+  }
 </script>
     <!-- External -->
     <script  src="{% static 'js/scripts-min.js' %}"></script>

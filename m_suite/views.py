@@ -53,9 +53,16 @@ import time
 
 
 from .models import keyword_count_data,youtube_comments
+from django.http import HttpResponse
+import base64
 
-# def index(request):
-#     return render(request,"index.html",{})
+import pandas as pd
+from io import BytesIO
+
+   
+from django.shortcuts import render
+from .models import keyword_count_data, youtube_comments
+
 
 def website_keyword(request):
     return render(request,"website_keyword.html",{})
@@ -222,12 +229,6 @@ def extract_links(request):
     #return render(request,"index.html",{'given_url':output_url,'keyword_list': keyword_list})
     #return None
 
-from django.http import HttpResponse
-import base64
-
-
-
-
 
 def download_dataset(request):
     # Retrieve keyword_df from the session
@@ -281,6 +282,9 @@ def profile_analyzer(request):
 def website_keyword(request):
     return render(request,"website_keyword.html",{})
 
+
+def sentiments(request):
+    return render(request,"sentiments.html",{})
 
 
 
@@ -339,18 +343,9 @@ def vectorizer(ds, vocabulary):
     vectorized_lst_new = np.asarray(vectorized_lst, dtype=np.float32)
     
     return vectorized_lst_new
-# def get_prediction(vectorized_text):
-#     vectorized_text = vectorized_text.reshape(1, -1)
-#     prediction = model.predict(vectorized_text)
-#     if prediction == 1:
-#         return 'positive'
-#     else:
-#         return 'negative'
 
-
-# Define the thresholds for categorization
-negative_threshold = 0.4
-positive_threshold = 0.7
+negative_threshold = 0.3
+positive_threshold = 0.5
 
 # Categorize the results
 def categorize(probability):
@@ -367,20 +362,66 @@ def get_prediction(vectorized_text):
     return prediction_score
 
 
-# sentences = ['amazing product', 'not expected with the quality', 'great experience']
-# preprocessed_sentences = preprocessing(sentences)
+def sentiment_model(df_comments):
+    # Retrieve df_comments from the session
+    rows = []
+    rows_2 = []
+    
+    sentences = df_comments['Comments']
+    
+    for sentence in sentences:
+        if sentence.strip():  # Check if the sentence is not empty or contains only whitespace
+            preprocessed_sentence = preprocessing([sentence])
+            #logging.info(f'Preprocessed Text : {preprocessed_sentence}')
 
-# vectorized_sentences = vectorizer(preprocessed_sentences, tokens)
+            vectorized_sentence = vectorizer(preprocessed_sentence, tokens)
+            #logging.info(f'Vectorized Text : {vectorized_sentence}')
 
-# predictions = [get_prediction(vectorized_sentence) for vectorized_sentence in vectorized_sentences]
+            prediction_scores = get_prediction(vectorized_sentence)
 
-# # Create a DataFrame
-# output_df = pd.DataFrame({'Sentence': sentences, 'Sentiment': predictions})
+            prediction = categorize(prediction_scores[0, 1])
+            # Get the top 5 maximum numbers
 
-# # Print the DataFrame
-# print(output_df)
+            
+            #logging.info(f'Prediction : {prediction}')
+
+            rows.append({'Sentence': sentence, 'Sentiment': prediction})
+            rows_2.append({'Sentence': sentence, 'prediction_scores': prediction_scores})
 
 
+    output_df = pd.DataFrame(rows)
+    output_df_2 = pd.DataFrame(rows_2)
+    
+    print(output_df_2)
+    output_df_2['score'] = output_df_2['prediction_scores'].apply(lambda x: x[0][1])
+    output_df_2 = output_df_2.drop('prediction_scores', axis=1)
+
+
+    print(output_df_2)
+    df_sorted_p = output_df_2.sort_values(by='score', ascending=False)
+    filtered_df = df_sorted_p[df_sorted_p['score'] > positive_threshold]
+    
+    top_positive_comments=[]
+    top_negative_comments=[]
+    
+    if not filtered_df.empty:
+        top_positive_comments = filtered_df['Sentence'].head(5)
+        print(top_positive_comments)
+    else:
+        print("No positive comments with score greater than 0.7 found.")
+    
+    df_sorted_n= output_df_2.sort_values(by='score', ascending=True)
+    
+    filtered_df = df_sorted_n[df_sorted_n['score'] < negative_threshold]
+    
+    if not filtered_df.empty:
+        top_negative_comments = filtered_df['Sentence'].head(5)
+        print(top_negative_comments)
+    else:
+        print("No negative comments with score less than 0.4 found.")
+    
+    
+    return output_df,top_positive_comments,top_negative_comments
 
 def proceed_yt_url(request):
     
@@ -690,66 +731,7 @@ def proceed_yt_url(request):
 
 
 
-    def sentiment_model(df_comments):
-        # Retrieve df_comments from the session
-        rows = []
-        rows_2 = []
-        
-        sentences = df_comments['Comments']
-        
-        for sentence in sentences:
-            if sentence.strip():  # Check if the sentence is not empty or contains only whitespace
-                preprocessed_sentence = preprocessing([sentence])
-                #logging.info(f'Preprocessed Text : {preprocessed_sentence}')
 
-                vectorized_sentence = vectorizer(preprocessed_sentence, tokens)
-                #logging.info(f'Vectorized Text : {vectorized_sentence}')
-
-                prediction_scores = get_prediction(vectorized_sentence)
-
-                prediction = categorize(prediction_scores[0, 1])
-                # Get the top 5 maximum numbers
-
-                
-                #logging.info(f'Prediction : {prediction}')
-    
-                rows.append({'Sentence': sentence, 'Sentiment': prediction})
-                rows_2.append({'Sentence': sentence, 'prediction_scores': prediction_scores})
-
- 
-        output_df = pd.DataFrame(rows)
-        output_df_2 = pd.DataFrame(rows_2)
-        
-        print(output_df_2)
-        output_df_2['score'] = output_df_2['prediction_scores'].apply(lambda x: x[0][1])
-        output_df_2 = output_df_2.drop('prediction_scores', axis=1)
-
-
-        print(output_df_2)
-        df_sorted_p = output_df_2.sort_values(by='score', ascending=False)
-        filtered_df = df_sorted_p[df_sorted_p['score'] > positive_threshold]
-        
-        top_positive_comments=[]
-        top_negative_comments=[]
-        
-        if not filtered_df.empty:
-            top_positive_comments = filtered_df['Sentence'].head(5)
-            print(top_positive_comments)
-        else:
-            print("No positive comments with score greater than 0.7 found.")
-        
-        df_sorted_n= output_df_2.sort_values(by='score', ascending=True)
-        
-        filtered_df = df_sorted_n[df_sorted_n['score'] < negative_threshold]
-        
-        if not filtered_df.empty:
-            top_negative_comments = filtered_df['Sentence'].head(5)
-            print(top_negative_comments)
-        else:
-            print("No negative comments with score less than 0.4 found.")
-        
-        
-        return output_df,top_positive_comments,top_negative_comments
 
     # keyword_df = request.session.get('keyword_df', [])
     
@@ -877,11 +859,6 @@ def proceed_yt_url(request):
                    'tn1':tn1,'tn2':tn2,'tn3':tn3,'tn4':tn4,'tn5':tn5,                
                    })
 
-    
-
-
-import pandas as pd
-from io import BytesIO
 
 def download_yt_comments(request):
     # Retrieve df_comments from the session
@@ -910,11 +887,186 @@ def download_yt_comments(request):
     response.write(excel_buffer.read())
 
     return response
-   
-from django.shortcuts import render
-from .models import keyword_count_data, youtube_comments
 
+
+
+
+
+def separate_into_sentences(paragraph):
+    # Download the punkt tokenizer if not already downloaded
+    nltk.download('punkt')
+
+    # Use the nltk.sent_tokenize function to split the paragraph into sentences
+    sentences = nltk.sent_tokenize(paragraph)
+
+    return sentences
+
+
+global text_passed
+
+def proceed_sentiments(request):
+    
+    if request.method == "POST":
+        
+        text_passed = request.POST.get('text_or_par')
+        print(text_passed)
+        
+        
+        
+        seperated_sentences  = separate_into_sentences(text_passed)
+        
+        for i, sentence in enumerate(seperated_sentences, start=1):
+            print(f"Sentence {i}: {sentence}")
+            
+        data_sentences = {'Comments': seperated_sentences, 'Sentiment': ''}
+        df_sentences = pd.DataFrame(data_sentences)
+        
+        df_comments_txt,top_positive_sent,top_negative_sent = sentiment_model(df_sentences)
+        
+    df_comments_txt_copy = df_comments_txt.iloc[:5,:].to_dict(orient='records')
+    full_data_sentiments = df_comments_txt
+    print('======================')
+    print(df_comments_txt)
+    df_comments_txt = df_comments_txt['Sentiment'].value_counts().reset_index()
+
+    print(df_comments_txt)
+    # Assuming your dataframe is named df_comments_yt_counts
+    # Initialize counts
+    p_count, neg_count, neu_count = 0, 0, 0
+    
+    sentiments = ['positive', 'negative', 'neutral']
+    # Loop through sentiments and update counts
+    for sentiment in sentiments:
+        if sentiment in df_comments_txt['Sentiment'].values:
+            count = df_comments_txt.loc[df_comments_txt['Sentiment'] == sentiment, 'count'].iloc[0]
+            if sentiment == 'positive':
+                p_count = count
+            elif sentiment == 'negative':
+                neg_count = count
+            elif sentiment == 'neutral':
+                neu_count = count
+
+
+    # If you want to convert the counts to integers, you can do that:
+    p_count_txt = int(p_count)
+    neg_count_txt = int(neg_count)
+    neu_count_txt = int(neu_count)
+    
+    request.session['full_data_sentiments'] = full_data_sentiments.to_dict(orient='records')
+
+    
+    
+    keyword_data_sen = []
+    words = re.findall(r'\w+', text_passed.lower())
+
+    # Remove stopwords, one-letter, one-digit words, prepositions, and all numbers
+    filtered_words = [word for word in words if word not in stopwords.words("english") and len(word) > 1 and not word.isdigit() and word not in 
+                ["a", "an", "the", "in", "on", "at", "to", "us", "day", "back", "contact", "cookies","cookie","help","menu"]]
+
+    # Create a Counter to count word frequencies
+    word_counter = Counter(filtered_words) 
+    
+    sorted_keywords = sorted(word_counter.items(), key=lambda x: x[1], reverse=True)
+
+    # Get the top 20 keywords with counts
+    top_keywords = sorted_keywords[:]
+
+    # Append data to the keyword_data list
+    for keyword, count in top_keywords:
+        keyword_data_sen.append([keyword, count])
+        
+    keyword_df_sen = pd.DataFrame(keyword_data_sen, columns=["Keyword", "Count"])
+    
+    keyword_df_sen = keyword_df_sen.groupby('Keyword').agg({'Count': 'sum'})
+    keyword_df_sen['Count'] = keyword_df_sen['Count'].astype('int')
+    # Reset the index and sort by 'Count'
+    keyword_df_sen = keyword_df_sen.reset_index().sort_values(by='Count',ascending =False)
+    request.session['keyword_df_sen'] = keyword_df_sen.to_dict(orient='records')
+
+    
+    
+    print(keyword_df_sen)
+    
+   
+    wc_word_list = keyword_df_sen.iloc[0:9,:].to_dict(orient='records')
+
+
+    # Generate the WordCloud image and get the base64 encoding
+    wordcloud_image_sen = generate_wordcloud_image(keyword_df_sen)
+    
+    
+    
+    return render(request,"sentiments.html",
+         {'df_comments_txt':df_comments_txt_copy,
+            'p_count_txt':p_count_txt,
+            'neg_count_txt':neg_count_txt,
+            'neu_count_txt':neu_count_txt,
+            'text_or_par':text_passed,
+            'wordcloud_image_sen':wordcloud_image_sen,
+            'wc_word_list':wc_word_list
+               
+                   }
+    )
+ 
+
+def download_txt_sentiments(request):
+    # Retrieve df_comments from the session
+    df_comments_txt = request.session.get('full_data_sentiments', [])
+
+    # Check if df_comments is empty
+    if not df_comments_txt:
+        messages.error(request, 'No data to download. Please perform the extraction first.')
+        return redirect('sentiments')  # Redirect to the index view
+
+    # Convert the data back to a DataFrame
+    df_comments_txt_df = pd.DataFrame(df_comments_txt)
+
+    # Create an in-memory Excel file
+    excel_buffer = BytesIO()
+
+    # Write the DataFrame to an Excel file
+    df_comments_txt_df.to_excel(excel_buffer, index=False, sheet_name='TXT_Sentiments')
+
+    # Create an HttpResponse and set the headers
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=txt_sentiments.xlsx'
+
+    # Write the Excel file content to the response
+    excel_buffer.seek(0)
+    response.write(excel_buffer.read())
+
+    return response
+
+def download_dataset_sen_wc(request):
+        # Retrieve df_comments from the session
+    dataset_sen_wc = request.session.get('keyword_df_sen', [])
+
+    # Check if df_comments is empty
+    if not dataset_sen_wc:
+        messages.error(request, 'No data to download. Please perform the extraction first.')
+        return redirect('sentiments')  # Redirect to the index view
+
+    # Convert the data back to a DataFrame
+    dataset_sen_wc_df = pd.DataFrame(dataset_sen_wc)
+
+    # Create an in-memory Excel file
+    excel_buffer = BytesIO()
+
+    # Write the DataFrame to an Excel file
+    dataset_sen_wc_df.to_excel(excel_buffer, index=False, sheet_name='SEN_WC_Sentiments')
+
+    # Create an HttpResponse and set the headers
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=dataset_sen_wc_df.xlsx'
+
+    # Write the Excel file content to the response
+    excel_buffer.seek(0)
+    response.write(excel_buffer.read())
+
+    return response
+        
 def history(request):
+    
     # Fetch data from the keyword_count_data and youtube_comments tables
     keyword_data = keyword_count_data.objects.all()
     yt_comments_data = youtube_comments.objects.all()
