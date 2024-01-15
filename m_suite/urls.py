@@ -21,7 +21,9 @@ urlpatterns = [
     path('brand_personality', views.brand_personality, name='brand_personality'),
     path('profile_analyzer', views.profile_analyzer, name='profile_analyzer'),
     path('website_keyword', views.website_keyword, name='website_keyword'),
-    path('sentiments', views.sentiments, name='sentiments')
+    path('sentiments', views.sentiments, name='sentiments'),
+    path('history/clear-history/', views.clear_history_view, name='clear_history_view')
+
     
 
 

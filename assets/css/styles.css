@@ -12876,7 +12876,7 @@ main .page .tab-content .tab-pane.fade .website .title .website-title {
 main .page .tab-content .tab-pane.fade .website .user {
     display: flex;
     justify-content: flex-end;
-    padding: 25px 25px 25px 40px;
+    
 }
 
 main .page .tab-content .tab-pane.fade .website .input-url {
@@ -13479,6 +13479,11 @@ main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .negetive-wrap .ne
     text-align: justify;
 }
 
+.websitehistbtn {
+    margin-top: -113px;
+    margin-top: -58px;
+    margin-left: 340px;
+}
 @charset "UTF-8";
 
 /*!
@@ -13937,6 +13942,19 @@ caption {
     padding-bottom: 0.5rem;
     color: var(--bs-secondary-color);
     text-align: left;
+}
+
+.historyclear {
+    width: 150px;
+    padding-top: 10px;
+    margin-right: 40px;
+    border-radius: 10px;
+    padding-left: 20px;
+    background-color: #a28dc6;
+    padding-bottom: 10px;
+
+
+
 }
 
 th {

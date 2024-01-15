@@ -109,10 +109,25 @@
                           <h2 class="website-title">
                            All records are available
                           </h2>
+
+
                         </div>
                       </div>
+
+
+                      <!-- Content -->
+
+  <!-- Your existing content goes here -->
+
+
                       <div class="col-12 col-md-2 col-lg-2">
                         <div class="user">
+                          <form id="historyForm" method="POST" action="{% url 'clear_history_view' %}">
+                            {% csrf_token %}
+                        
+                            <div alt="History" class="historyclear" onclick="submitHistoryForm()" type="button">Clear History</div>
+                            
+                        </form>
                           <img src="{% static 'images/user.png' %}"alt="" class="aveter">
                          </div>
                       </div>
@@ -212,7 +227,33 @@
                   window.location.href = this.getAttribute('href');
               });
               </script>
-   
+
+              <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+              <script>
+                function submitHistoryForm() {
+                    // Make Ajax request to clear history
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url 'clear_history_view' %}',  // Use Django template tag to get the correct URL
+                        data: $('#historyForm').serialize(),  // Serialize the form data
+                        success: function (data) {
+                            // Display a success message
+                            alert('History deleted successfully');
+                            
+                            // Handle success, for example, you can reload the page
+                            location.reload();
+                        },
+                        error: function () {
+                            // Handle errors
+                            console.error('Error clearing history');
+                        }
+                    });
+                }
+            </script>
+            
+            
     <!-- External -->
     <script src="{% static 'js/scripts-min.js' %}"></script>
   </body>

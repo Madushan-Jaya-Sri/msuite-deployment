@@ -112,6 +112,8 @@
 
                                             <form id="historyForm" method="POST" action="{% url 'history' %}">
                                                 {% csrf_token %}
+
+                                            
                                                 <img src="{% static 'images/histry.png' %}" alt="" class="history-button" onclick="submitForm()" type='button'>
                                             </form>
 

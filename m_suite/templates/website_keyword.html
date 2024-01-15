@@ -109,16 +109,20 @@
                         <div class="title">
                           <h2 class="website-title">
                             Website Keyword Analysis
-                          
 
-                          <form id="historyForm" method="POST" action="{% url 'history' %}">
-                            {% csrf_token %}
-                            <img src="{% static 'images/histry.png' %}" alt="" class="history-button" onclick="submitForm()" type='button'>
-                          </form>
-                        </h2>
+
+                          </h2>
+                          <div class='websitehistbtn'>
+                            <form id="historyForm" method="POST" action="{% url 'history' %}">
+                              {% csrf_token %}
+                              <img src="{% static 'images/histry.png' %}" alt="" class="history-button" onclick="submitForm()" type='button'>
+                            </form>
+                          </div>
                         </div>
                       </div>
                       <div class="col-12 col-md-2 col-lg-2">
+
+
                         <div class="user">
                           <img src="{% static 'images/user.png' %}"  alt="" class="aveter">
                          </div>

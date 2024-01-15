@@ -1077,3 +1077,16 @@ def history(request):
 
     # Pass the data to the template
     return render(request, "history.html", {'keyword_data': keyword_data_list, 'yt_comments_data': yt_comments_data_list})
+
+from django.http import JsonResponse
+from .models import keyword_count_data, youtube_comments
+
+def clear_history_view(request):
+    # Clear records from the keyword_count_data table
+    keyword_count_data.objects.all().delete()
+
+    # Clear records from the youtube_comments table
+    youtube_comments.objects.all().delete()
+
+    return JsonResponse({'status': 'History cleared successfully'})
+
