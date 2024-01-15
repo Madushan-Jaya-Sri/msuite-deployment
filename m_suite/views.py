@@ -58,10 +58,16 @@ import base64
 
 import pandas as pd
 from io import BytesIO
+from datetime import datetime
 
    
 from django.shortcuts import render
 from .models import keyword_count_data, youtube_comments
+
+def currentdtt (request):
+    current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    #return render_template('index.html', current_datetime=current_datetime)
+    return render(request, "overview.html",{current_datetime:current_datetime})
 
 
 def website_keyword(request):
@@ -262,7 +268,16 @@ def download_dataset(request):
 
 
 def overview(request):
-    return render(request,"overview.html",{})
+    current_datetime = datetime.now()
+
+    # Extracting month, date, and day
+    month = current_datetime.strftime('%B')  # Full month name
+    date = current_datetime.day
+    day = current_datetime.strftime('%A')    # Full day name
+
+    return render(request, "overview.html", {'month': month, 'date': date, 'day': day})
+    
+
 
 def sentiment_analysis(request):
     return render(request,"sentiment_analysis.html",{})

@@ -12769,7 +12769,7 @@ main .page .tab-content .tab-pane .overview .doughnut-overview {
     background-color: #fff;
     padding: 20px;
     border-radius: 15px;
-    min-height: 60vh;
+    min-height: 66vh;
 }
 
 main .page .tab-content .tab-pane .overview .doughnut-overview .title-users .title {
@@ -12808,7 +12808,7 @@ main .page .tab-content .tab-pane .overview .did-know {
     padding: 20px;
     border-radius: 15px;
     margin-top: 10px;
-    height: 35vh;
+    height: 40vh;
 }
 
 main .page .tab-content .tab-pane .overview .did-know .title {
@@ -20237,6 +20237,15 @@ fieldset:disabled .btn {
     }
 }
 
+.socialusertitle {
+    font-weight: bold;
+    margin-bottom: -23px;
+    /* padding-bottom: 0px; */
+    padding-top: 10px;
+    text-align: center;
+
+
+}
 .spinner-border {
     --bs-spinner-width: 2rem;
     --bs-spinner-height: 2rem;

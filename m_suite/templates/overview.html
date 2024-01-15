@@ -117,7 +117,13 @@
                     </div>
                     <div class="row g-3">
                       <div class="col-12 col-md-6 col-lg-6">
+
                         <div class="linechart-overview">
+                          <div class="title-users socialusertitle">
+                            
+                              Social Media Users in Sri Lanka
+                            
+                          </div>
                           <canvas id="overview-line-chart" height="0vh" width="100%"></canvas>    
                           <canvas id="myCharts" height="0vh" width="100%"></canvas>                
                         </div>
@@ -134,12 +140,13 @@
                       </div>
                       <div class="col-12 col-md-2 col-lg 2">
                         <div class="calander">
-                          <p class="month">December</p>
-                          <h2 class="date">17</h2>
-                          <p class="day">Thursday</p>
+
+                          <p class="month">{{month}}</p>
+                          <h2 class="date">{{date}}</h2>
+                          <p class="day">{{day}}</p>
                         </div>
                         <div class="did-know">
-                          <h3 class="title">
+                          <h3   class="title">
                             Did You Know?
                           </h3>
                           <p class="description">
@@ -354,7 +361,7 @@
           yAxisKey: 'users.instagram'
         }
       },{
-        label: 'twitter',
+        label: 'tiktok',
         data: usersNumbers,
         backgroundColor: '#00000',
         borderColor:'#00000',
@@ -385,7 +392,17 @@
           y: {
             beginAtZero: true
           }
-        }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              boxWidth: 10,
+              // Adjust the itemHeight property to control the height of each legend item
+              // Adjust this value based on your needs
+              boxHeight: 10, // You can adjust this value based on your needs
+            },
+          },
+        },
       },
     };
 
