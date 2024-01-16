@@ -20,6 +20,8 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
+ 
+
   </head>
   <body class="site-main">
     <!-- Header -->
@@ -128,7 +130,17 @@
                           {% csrf_token %}
                           <div class="youtube">
                             <img src="{% static 'images/youtube.png' %}" alt="youtube" class="icon">
-                            <input type="text" name='yt_url' placeholder="Enter Chanal URL Here" class="url" value = {{yt_url}}>
+                            <input type="text"
+                                  name="yt_url"
+                                  title="To get the channel Id, follow these steps:
+                                          1. Go to the channel page and right-click.
+                                          2. Click on the 'View Page Source' option.
+                                          3. Tick the line-wrap box.
+                                          4. Press Ctrl+F and type as '?channel_id'
+                                          5. Then copy the code behind the channel id and paste it here!"
+                                  placeholder="Enter Channel ID Here"
+                                  class="url"
+                                  value="{{ yt_url }}">
                           </div>
                       </div>
                       <div class="col-12 col-md-2 col-lg-2">
@@ -150,7 +162,7 @@
                           <div class="subscribe">
                             <h4 class="subscribe-title">
                               {{channel_name}}
-                              <img src="{{image}}" width="50px",height="50px" alt="pro_pic">
+                              {% comment %} <img src="{{image}}" width="50px",height="50px" alt="pro_pic"> {% endcomment %}
                               
                             </h4>
                             
@@ -207,8 +219,8 @@
                               Key Topics
                             </h4>
                           </div>
-                          <div class="topics">
-                            <table class="table table-hover">
+                          <div class="topics keytopics dataset-table-container">
+                            <table class="dataset table table-hover">
 
 
                               {% for entry in df_yt_titles %}
@@ -248,8 +260,8 @@
                               </div>
                             </div>
                           </div>                          
-                          <div class="dataset-table">
-                            <table class="dataset table table-bordered">
+                          <div class="dataset-table-container">
+                            <table class="dataset table table-bordered ytcomments dataset-table">
                               <tr>
                                 <th class="id-title">
                                   Channel Name
@@ -264,9 +276,9 @@
                               {% for entry in df_yt_comments %}
                               <tr>
                                   
-                                  <td class="key-data">{{ entry.Channel_Name }}</td>
+                                  <td class="key-data">{{ entry.Video_Title }}</td>
                                   {% comment %} <td class="count-data">{{ entry.Video_Title }}</td> {% endcomment %}
-                                  <td class="count-data">{{ entry.Comments }}</td>
+                                  <td class="count-data">{{ entry.Comment }}</td>
                               </tr>
                               {% endfor %}
                             </table>
@@ -302,13 +314,20 @@
                               <!-- wordcloud sentiment -->
                               <div class="tab-pane fade show active" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
                                 <div class="wordcloud-sentiment">
-                                  <img src="{% static 'images/abc.png' %}" alt="cloud" class="sentiment">
+                                  <a href='https://wordart.com/edit/hod5hgvuz8bi'>
+                                    <img class="sentiment cloud-image img-fluid" src="data:image/png;base64,{{ wordcloud_image_yt_sen_wc }}" alt="" href='https://wordart.com/edit/hod5hgvuz8bi'>
+                                    </a>
                                 </div>
                               </div>
                               <!-- word cloud key topic -->
                               <div class="tab-pane fade" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
                                 <div class="wordcloud-keyTopic">
-                                  <img src="{% static 'images/abc.png' %}" alt="cloud" class="sentiment">
+                                  {% comment %} <img src="{% static 'images/abc.png' %}" alt="cloud" class="sentiment"> {% endcomment %}
+                                  
+                                  <a href='https://wordart.com/edit/hod5hgvuz8bi'>
+                                    <img class="sentiment cloud-image img-fluid" src="data:image/png;base64,{{ wordcloud_image_yt_titles_wc }}" alt="" href='https://wordart.com/edit/hod5hgvuz8bi'>
+                                    </a>
+                                
                                 </div>
                               </div>
                             </div>

@@ -107,7 +107,7 @@
                       <div class="col-12 col-md-10 col-lg-10">
                         <div class="title">
                           <h2 class="website-title">
-                           All records are available
+                           All available records!
                           </h2>
 
 
@@ -132,38 +132,60 @@
                          </div>
                       </div>
                     </div>
-                    <div class="div">
+                    
                       {% comment %} <h1>
                         Comming Soon
                       </h1> {% endcomment %}
 
                       
                       <h3>Websites keywords data</h3>
-                      <table border="1">
+
+                      
+                        <table border="1" class="table table-hover">
+                            <tr>
+                                <th class="keyword">Keyword</th>
+                                <th class="count">Count</th>
+                                <th class="count">URL</th>
+                            </tr>
+                            {% for keyword_entry in keyword_data %}
+                                <tr >
+                                    <td>{{ keyword_entry.Keyword }}</td>
+                                    <td>{{ keyword_entry.Count }}</td>
+                                    <td>{{ keyword_entry.Url }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                      
+                      
+                      <h3>YouTube Comments Data</h3>
+
+                      
+                      <table class="table table-hover">
                           <tr>
-                              <th>Keyword</th>
-                              <th>Count</th>
-                              <th>URL</th>
+                              <th class="keyword">Video Title</th>
+                              <th class="keyword">Comments</th>
                           </tr>
-                          {% for keyword_entry in keyword_data %}
+                          {% for yt_comments_entry in yt_comments_data %}
                               <tr>
-                                  <td>{{ keyword_entry.Keyword }}</td>
-                                  <td>{{ keyword_entry.Count }}</td>
-                                  <td>{{ keyword_entry.Url }}</td>
+                                  <td>{{ yt_comments_entry.Video_Title }}</td>
+                                  <td>{{ yt_comments_entry.Comment }}</td>
                               </tr>
                           {% endfor %}
                       </table>
                       
-                      <h3>YouTube Comments Data</h3>
-                      <table border="1">
+
+                      <h3>Sentiments Data</h3>
+
+                      
+                      <table class="table table-hover">
                           <tr>
-                              <th>Channel Name</th>
-                              <th>Comments</th>
+                              <th class="keyword">Comment</th>
+                              <th class="keyword">Sentiment</th>
                           </tr>
-                          {% for yt_comments_entry in yt_comments_data %}
+                          {% for entry in sentiments_comments_data %}
                               <tr>
-                                  <td>{{ yt_comments_entry.Channel_Name }}</td>
-                                  <td>{{ yt_comments_entry.Comments }}</td>
+                                  <td>{{ entry.Sentence }}</td>
+                                  <td>{{ entry.Sentiment }}</td>
                               </tr>
                           {% endfor %}
                       </table>
@@ -172,7 +194,7 @@
                       
 
 
-                    </div>
+                   
                   </div>
                 </div>    
               </div>

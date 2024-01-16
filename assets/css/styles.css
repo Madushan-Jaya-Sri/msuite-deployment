@@ -5543,6 +5543,18 @@ fieldset:disabled .btn {
     }
 }
 
+.dataset-table-container {
+    /* Set a fixed height for the container */
+    max-height: 220px;
+    /* Add overflow-y property to enable vertical scrolling */
+    overflow-y: auto;
+  }
+
+  /* Your existing styles for the table */
+  .dataset-table {
+    width: 100%;
+  }
+
 .list-group-flush {
     border-radius: 0;
 }
@@ -6552,6 +6564,25 @@ fieldset:disabled .btn {
     background-repeat: no-repeat;
     background-position: 50%;
     background-size: 100% 100%;
+}
+input[title]::after {
+    content: attr(title);
+    background: #3498db !important; /* Change this to your desired background color */
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+input[title]:hover::after {
+    opacity: 1;
 }
 
 
@@ -13396,7 +13427,7 @@ main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .comments .positiv
 
 main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .comments .positive-wrap .positive .comment {
     font-size: 14px;
-    line-height: 2px;
+    
 }
 
 main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .comments .positive-wrap .positive .img-wrap {
@@ -13434,7 +13465,7 @@ main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .negetive-wrap .ne
 
 main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .negetive-wrap .negetive .comment {
     font-size: 14px;
-    line-height: 2px;
+    
 }
 
 main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .negetive-wrap .negetive .img-wrap {
@@ -13470,6 +13501,14 @@ main .page .tab-content .tab-pane.fade .sentiment .cloud-wrap .negetive-wrap .ne
 .page-content.error404-page .action .link:hover {
     background-color: transparent;
     color: #fff;
+}
+
+.keytopics {
+    font-size: 10px;
+}
+
+.ytcomments {
+    font-size: 8px;
 }
 
 .enteredtxt {
@@ -15427,6 +15466,44 @@ progress {
         --bs-gutter-y: 3rem;
     }
 }
+
+.positive-wrap {
+    /* Set a fixed height for the container */
+    max-height: 480px;
+    /* Add overflow-y property to enable vertical scrolling */
+    overflow-y: auto;
+  }
+
+  .positive {
+    /* Add margin-bottom for spacing between individual comments */
+    margin-bottom: 10px;
+  }
+
+  /* Your existing styles remain unchanged */
+  .usericon img,
+  .img-wrap img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .negetive-wrap {
+    /* Set a fixed height for the container */
+    max-height: 480px;
+    /* Add overflow-y property to enable vertical scrolling */
+    overflow-y: auto;
+  }
+
+  .negetive {
+    /* Add margin-bottom for spacing between individual comments */
+    margin-bottom: 10px;
+  }
+
+  /* Your existing styles remain unchanged */
+  .usericon img,
+  .img-wrap img {
+    max-width: 100%;
+    height: auto;
+  }
 
 .table {
     --bs-table-color-type: initial;

@@ -62,7 +62,7 @@ from datetime import datetime
 
    
 from django.shortcuts import render
-from .models import keyword_count_data, youtube_comments
+from .models import keyword_count_data, youtube_comments,sentiments_comments
 
 def currentdtt (request):
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -359,8 +359,8 @@ def vectorizer(ds, vocabulary):
     
     return vectorized_lst_new
 
-negative_threshold = 0.3
-positive_threshold = 0.5
+negative_threshold = 0.2
+positive_threshold = 0.4
 
 # Categorize the results
 def categorize(probability):
@@ -438,284 +438,228 @@ def sentiment_model(df_comments):
     
     return output_df,top_positive_comments,top_negative_comments
 
+from googleapiclient.discovery import build
+import pandas as pd
+from googleapiclient.errors import HttpError
+from googleapiclient.discovery import build
+import pandas as pd
+from googleapiclient.errors import HttpError
+
+
+def get_channel_info(youtube, channel_id):
+    try:
+        request = youtube.channels().list(
+            part='snippet,contentDetails,statistics',
+            id=channel_id
+        )
+        response = request.execute()
+        channel_info = response['items'][0]
+
+        channel_name = channel_info['snippet']['title']
+        videos_count = int(channel_info['statistics']['videoCount'])
+        subscribers_count = int(channel_info['statistics']['subscriberCount'])
+        joined_date = pd.to_datetime(channel_info['snippet']['publishedAt']).strftime('%B %Y')
+        country = channel_info['snippet'].get('country', 'N/A')
+        total_views = int(channel_info['statistics']['viewCount'])
+        profile_pic_url = channel_info['snippet']['thumbnails']['default']['url']
+
+        avg_views = int(total_views / videos_count) if videos_count != 0 else 0
+
+        return {
+            'Channel_Name': channel_name,
+            'Profile_Pic_URL': profile_pic_url,
+            'Subscribers': subscribers_count,
+            'Total_Views': total_views,
+            'Country': country,
+            'Joined_Date': joined_date,
+            'Total_No_Videos': videos_count,
+            'Avg_Views': avg_views
+        }
+    except HttpError as e:
+        print(f"Error fetching channel info, Error message: {str(e)}")
+        return None
+
+def get_uploaded_playlist_id(youtube, channel_id):
+    try:
+        request = youtube.channels().list(
+            part='contentDetails',
+            id=channel_id
+        )
+        response = request.execute()
+        playlist_id = response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        return playlist_id
+    except HttpError as e:
+        print(f"Error fetching playlist ID, Error message: {str(e)}")
+        return None
+
+def get_all_video_comments(youtube, video_ids):
+    all_comments = []
+
+    try:
+        for video_id in video_ids:
+            page_token = None
+
+            while True:
+                request = youtube.commentThreads().list(
+                    part='snippet',
+                    videoId=video_id,
+                    textFormat='plainText',
+                    pageToken=page_token
+                )
+                response = request.execute()
+
+                for item in response['items']:
+                    comment = item['snippet']['topLevelComment']['snippet']['textDisplay']
+                    all_comments.append({
+                        'Video_ID': video_id,
+                        'Comment': comment
+                    })
+
+                    if 'replies' in item:
+                        for reply_item in item['replies']['comments']:
+                            reply = reply_item['snippet']['textDisplay']
+                            all_comments.append({
+                                'Video_ID': video_id,
+                                'Comment': reply
+                            })
+
+                page_token = response.get('nextPageToken')
+                if not page_token:
+                    break
+
+    except HttpError as e:
+        print(f"Error fetching comments, Error message: {str(e)}")
+
+    return all_comments
+
+def get_uploaded_videos(youtube, playlist_id):
+    all_video_ids = []
+    page_token = None
+
+    try:
+        while True:
+            request = youtube.playlistItems().list(
+                part='contentDetails',
+                playlistId=playlist_id,
+                maxResults=50,
+                pageToken=page_token
+            )
+            response = request.execute()
+
+            for item in response['items']:
+                video_id = item['contentDetails']['videoId']
+                all_video_ids.append(video_id)
+
+            page_token = response.get('nextPageToken')
+            if not page_token:
+                break
+
+    except HttpError as e:
+        print(f"Error fetching uploaded videos, Error message: {str(e)}")
+
+    # Get comments for all video IDs
+    all_comments = get_all_video_comments(youtube, all_video_ids)
+
+    # Combine video IDs and comments
+    uploaded_videos = [{'Video_ID': video_id, 'Video_Comments': []} for video_id in all_video_ids]
+    for comment in all_comments:
+        for video in uploaded_videos:
+            if comment['Video_ID'] == video['Video_ID']:
+                video['Video_Comments'].append(comment['Comment'])
+
+    return uploaded_videos
+
+
+
+
+api_key = 'AIzaSyDVx3HjgrMGMdlIuai5W8aTmBH9JnU4zrE' 
+youtube = build('youtube', 'v3', developerKey=api_key)
+
+# Function to get video titles
+def get_video_titles(video_ids, youtube):
+    video_titles = {}
+    for video_id in video_ids:
+        request = youtube.videos().list(
+            part='snippet',
+            id=video_id
+        )
+        response = request.execute()
+        title = response['items'][0]['snippet']['title']
+        video_titles[video_id] = title
+    return video_titles
+
+
+
 def proceed_yt_url(request):
-    
-    logging.info('driver openning ===========')
-    channel_names = []
-    video_titles = []
-    
-    # Set Chrome options to disable notifications
-    chrome_options = Options()
-    
-    logging.info('driver openning =========== in headless mode')
-    
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument("--lang=en-US")
-    
-    logging.info('driver run successfully ===========')
-    chrome_options.add_experimental_option("prefs", {
-        "profile.default_content_setting_values.notifications": 2
-    })
-
-    # Specify the path to the ChromeDriver executable
-    chrome_driver_path = '/usr/local/bin/chromedriver'
-
-    # Initialize the Chrome WebDriver with the configured options and driver path
-    
-    
-    #driver = webdriver.Chrome(executable_path=chrome_driver_path, options=chrome_options)
-
-
-
-    service = Service(executable_path=chrome_driver_path)
-    options = webdriver.ChromeOptions()
-    driver = webdriver.Chrome(service=service, options=options)
-
-    # Initialize the Chrome WebDriver with the configured options
-    # driver = webdriver.Chrome(options=chrome_options)
-    # driver.maximize_window()
-
-    yt_url = "" 
-    
-    
+   
     if request.method == "POST":
         yt_url = request.POST.get('yt_url')
         
-        logging.info(f'yt_url : {yt_url}')
-        
-        urls = [yt_url]
-        print(urls)
-        
-        for url in urls:
-            # Open the YouTube channel URL
-            driver.get(url)
+    youtube = build('youtube', 'v3', developerKey=api_key)
+    
+    # Specify the YouTube channel ID
+    channel_id = yt_url
+    video_ids = [] 
+    comments_df = None 
+    try:
+        # Retrieve channel information
+        channel_info = get_channel_info(youtube, channel_id)
 
-            # Get the channel name
-            channel_name_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="channel-name"]')))
-            channel_name = channel_name_element.text
-            logging.info(f'channel_name : {channel_name}')
-            print(channel_name)
+        if channel_info:
+            # Create channel_details dataframe
+            channel_details = pd.DataFrame([channel_info])
 
-            pro_pic = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ' //*[@id="img"]')))
-            image = pro_pic.get_attribute("src")
-            
-            details = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, ' //*[@id="content"]')))
-            details.click()
-            logging.info('=========   Element-about clicked==========')
-            
-            print(details.text)
-            
-            time.sleep(3)
-            
-            about = driver.find_elements(By.XPATH, '//*[@id="contents"]')
-            
-            # about = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="contents"]')))
-            # driver.save_screenshot('screenshot2.png') 
-            
-            text = about[-1].text
-            print(text)
-            
-            #logging.info(f'Text : {text}')
-            lines = text.strip().split('\n')
-            join_date_line = lines[-3].strip() if lines else "Joined date not found"
-            join_date = join_date_line.replace("Joined ", "") if "Joined" in join_date_line else "Join date not found."
+            # Display channel_details dataframe
+            print("\nChannel Details DataFrame:")
+            print(channel_details)
 
+            # Retrieve the playlist ID for the channel's uploaded videos
+            playlist_id = get_uploaded_playlist_id(youtube, channel_id)
 
-            # Extract the number of videos
-            pattern3 = r"(\d+) videos"
-            match = re.search(pattern3, text)
-            num_videos = int(match.group(1)) if match else "Number of videos not found."
+            if playlist_id:
+                # Retrieve the list of uploaded videos with comments
+                uploaded_videos = get_uploaded_videos(youtube, playlist_id)
 
-            
-            # Extract the number of views
-            pattern4 = r"([\d,.]+) views"
-            match_views = re.search(pattern4, text)
-            num_views = int(match_views.group(1).replace(",", "")) if match_views else "Number of views not found."
+                # Create comments_df dataframe
+                comments_data = []
+                for video in uploaded_videos:
+                    comments_data.extend({'Video_ID': video['Video_ID'], 'Comment': comment} for comment in video['Video_Comments'])
+                comments_df = pd.DataFrame(comments_data)
 
-
-            
-            # Search for the pattern in the text
-            lines = text.strip().split('\n')
-            country = lines[-2].strip() if lines else "Country not found"
-
-
-
-
-            pattern2_1 = r"([\d.]+)K subscribers"
-            pattern2_2 = r"([\d.]+)M subscribers"
-            pattern3 = r"([\d.]+) subscribers"
-
-            combined_pattern = f"{pattern2_1}|{pattern2_2}|{pattern3}"
-            match = re.search(combined_pattern, text)
-
-            if match:
-                if 'K' in match.group(0):
-                    subscribers_str = match.group(1)
-                    subscribers = int(float(subscribers_str) * 1000)
-                elif 'M' in match.group(0):
-                    subscribers_str = match.group(2)
-                    subscribers = int(float(subscribers_str) * 1000000)
-                else:
-                    subscribers_str = match.group(3)
-                    subscribers = int(float(subscribers_str))
-            else:
-                subscribers = None
-
-            avg_n_v = int(num_views/num_videos)
-
-            
-
-            
-            # # Print or store the extracted information
-            # print("Channel Name:", channel_name)
-            # print("Join Date:", join_date)
-            # print("Number of Subscribers:", subscribers)
-            # print("Number of Videos:", num_videos)
-            # print("Number of Views:", num_views)
-            # print("Country:", country)
-            # #print("Text:", text)
-            # print("-" * 50)
-       
-       
-        for url in urls:
-            # Open the YouTube channel URL
-            driver.get(url)
-
-            # Get the channel name
-            channel_name_element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//*[@id="channel-name"]')))
-            channel_name = channel_name_element.text
-
-            video = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tabsContent"]/yt-tab-group-shape/div[1]/yt-tab-shape[2]/div[1]')))
-            video.click()
-
-            
-            
-            # Scroll down the page multiple times (adjust the count as needed)
-            for _ in range(100):
-                driver.execute_script("window.scrollBy(0, 500)")
-                time.sleep(0.2)
+                # Display comments_df dataframe
+                print("\nComments DataFrame:")
+                print(comments_df)
                 
+            video_ids = comments_df['Video_ID'].unique()
 
-            
-            # Scrape video titles
-            titles = driver.find_elements(By.XPATH, '//*[@id="video-title"]')
-            for title in titles:
-                channel_names.append(channel_name)
-                video_titles.append(title.text)
-
-        # Create a DataFrame from the scraped data
-        data = {'Channel Name': channel_names, 'Video_Title': video_titles}
-        df = pd.DataFrame(data)
-        
-        df_yt_titles = df.iloc[0:5,1:].to_dict(orient='records')
+    except Exception as e:
+        print(f"Error: {str(e)}")
 
 
+    
 
-        # Create a DataFrame to store the data
-        data = []
+    
 
+    # Check if comments_df is not None before accessing attributes
+    if comments_df is not None:
+        # Get video titles for the provided Video IDs
+        video_titles = get_video_titles(video_ids,youtube)
 
-        # Loop through the videos and collect comments
+        # Map Video ID to Video Title in the DataFrame
+        comments_df['Video_Title'] = comments_df['Video_ID'].map(video_titles)
 
-        for video in titles:
-            try:
-                #video_title = video.text
-                action = ActionChains(driver)
-                action.move_to_element(video).click().perform()
-            
-                time.sleep(1)
-                
-                
-                
-                for _ in range(2):
-                    # Scroll down by a fixed amount (e.g., 500 pixels)
-                    driver.execute_script("window.scrollBy(0, 500);")
-                    time.sleep(3)
-                # driver.execute_script("window.scrollBy(0, 1000);")
-                # time.sleep(4)
-                
-                comment_count = driver.find_element(By.XPATH,'/html/body/ytd-app/div[1]/ytd-page-manager/ytd-watch-flexy/div[5]/div[1]/div/div[2]/ytd-comments/ytd-item-section-renderer/div[1]/ytd-comments-header-renderer/div[1]/h2/yt-formatted-string/span[1]')
-                string_with_comma = comment_count.text
+        del comments_df['Video_ID']
+        comments_df = comments_df[['Video_Title'] + [col for col in comments_df.columns if col != 'Video_Title']]
 
-                # Check if the string contains a comma
-                if ',' in string_with_comma:
-                    string_without_comma = string_with_comma.replace(',', '')
-                    no_comments = int(string_without_comma)
-                else:
-                    no_comments = int(string_with_comma)
-            
-                if no_comments == 0:
-                     for _ in range(1):
-                        # Scroll down by a fixed amount (e.g., 500 pixels)
-                        driver.execute_script("window.scrollBy(0, 500);")
-                        time.sleep(0.5)
-                    
-                
-                else:
-                
-                    for _ in range(int(no_comments/6)):
-                        # Scroll down by a fixed amount (e.g., 500 pixels)
-                        driver.execute_script("window.scrollBy(0, 500);")
-                        time.sleep(0.5)
-                    
-                    
-                    comments = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'style-scope ytd-expander')))
-            
-                    #comments = driver.find_elements(By.CLASS_NAME, 'style-scope ytd-expander')
-                    emojis = driver.find_elements(By.XPATH, '//*[@id="content-text"]/img')
-                    
-            
-                    for emoji_img in emojis:
-                        emoji = emoji_img.get_attribute('alt')
-                        driver.execute_script("arguments[0].innerHTML = arguments[1];", emoji_img, emoji)
-                        text_with_emojis = driver.find_element(By.XPATH, '//*[@id="content-text"]/img').text
-                        
-                    # Process comments and emojis (if needed)
-                    video_comments = []
-                    for comment in comments:
-                        video_comments.append(comment.text)
-            
-                    # Store comments in your data structure (e.g., a list)
-                    for comment in video_comments:
-                        data.append([channel_name, comment])
+        # Display the modified DataFrame
+        print(comments_df)
 
-                
-                #time.sleep(3)
+        df_comments = comments_df
+    else:
+        # Handle the case where comments_df is None
+        df_comments = pd.DataFrame()
 
-
-        
-            
-            except ElementClickInterceptedException:
-                    print(f"ElementClickInterceptedException for video: {'video_title'}. Skipping...")
-                    
-            except StaleElementReferenceException:
-                    print(f"ElementClickInterceptedException for video: {'video_title'}. Skipping...")
-
-            except TimeoutException:
-                print("")
-
-            except NoSuchElementException:
-                print("")
-                
-            except ElementNotInteractableException:
-                print("")
-                
-            except NoSuchWindowException:
-                print("")
-                
-                
-            # Go back to the channel page
-            driver.back()
-
-            
-                
-
-
-
-
-        #driver.close()
-
-    df_comments = pd.DataFrame(data, columns=['Channel_Name', 'Comments'])
+    #df_comments = pd.DataFrame(data, columns=['Channel_Name', 'Comments'])
    
     request.session['df_comments'] = df_comments.to_dict(orient='records')
         # Create a DataFrame from the collected data
@@ -724,7 +668,7 @@ def proceed_yt_url(request):
 
     # Store keyword_df in the session
     for index, row in df_comments.iterrows():
-        youtube_comments_instance, created = youtube_comments.objects.get_or_create(Channel_Name=row['Channel_Name'], Comments=row['Comments'])
+        youtube_comments_instance, created = youtube_comments.objects.get_or_create(Video_Title=row['Video_Title'], Comment=row['Comment'])
 
         youtube_comments_instance.save()
 
@@ -738,9 +682,9 @@ def proceed_yt_url(request):
     # Print the DataFrame
     print(df_comments)
     
+    df_comments.rename(columns={'Comment': 'Comments'}, inplace=True)
+    df_new = df_comments.copy()
     
-    
-
 
 
 
@@ -853,20 +797,110 @@ def proceed_yt_url(request):
     else:
         print("top_negative_comments_df is empty. Doing nothing.")
 
-        
+    df_yt_titles = df_comments['Video_Title'].unique()
+    df_yt_titles = {'Video_Title':df_yt_titles}
+    df_yt_titles = pd.DataFrame(df_yt_titles)
+    df_yt_titles = df_yt_titles.iloc[0:5,:].to_dict(orient='records')
+ 
+
+    yt_data_sen_wc =[]
+    comments_concatenated = df_new['Comments'].str.cat(sep=' ')
+
+    # Extract words from the concatenated comments
+    words = re.findall(r'\w+', comments_concatenated.lower())
+
+    # Remove stopwords, one-letter, one-digit words, prepositions, and all numbers
+    filtered_words = [word for word in words if word not in stopwords.words("english") and len(word) > 1 and not word.isdigit() and word not in 
+                ["a", "an", "the", "in", "on", "at", "to", "us", "day", "back", "contact", "cookies","cookie","help","menu"]]
+
+    # Create a Counter to count word frequencies
+    word_counter = Counter(filtered_words) 
     
+    sorted_keywords = sorted(word_counter.items(), key=lambda x: x[1], reverse=True)
+
+    # Get the top 20 keywords with counts
+    top_keywords = sorted_keywords[:]
+
+    # Append data to the keyword_data list
+    for keyword, count in top_keywords:
+        yt_data_sen_wc.append([keyword, count])
+        
+    yt_df_sen_wc = pd.DataFrame(yt_data_sen_wc, columns=["Keyword", "Count"])
+    
+    yt_df_sen_wc = yt_df_sen_wc.groupby('Keyword').agg({'Count': 'sum'})
+    yt_df_sen_wc['Count'] = yt_df_sen_wc['Count'].astype('int')
+    # Reset the index and sort by 'Count'
+    yt_df_sen_wc = yt_df_sen_wc.reset_index().sort_values(by='Count',ascending =False)
+    request.session['keyword_df_sen'] = yt_df_sen_wc.to_dict(orient='records')
+
+    
+    print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+    print(yt_df_sen_wc)
+    
+   
+    wc_word_list = yt_df_sen_wc.iloc[0:9,:].to_dict(orient='records')
+
+
+    # Generate the WordCloud image and get the base64 encoding
+    wordcloud_image_yt_sen_wc = generate_wordcloud_image(yt_df_sen_wc)
+    
+    
+    
+    print(df_yt_titles)
+    
+    video_titles_text = ' '.join(item['Video_Title'] for item in df_yt_titles)
+    yt_data_titles_wc =[]
+    words = re.findall(r'\w+', video_titles_text.lower())
+
+    # Remove stopwords, one-letter, one-digit words, prepositions, and all numbers
+    filtered_words = [word for word in words if word not in stopwords.words("english") and len(word) > 1 and not word.isdigit() and word not in 
+                ["a", "an", "the", "in", "on", "at", "to", "us", "day", "back", "contact", "cookies","cookie","help","menu"]]
+
+    # Create a Counter to count word frequencies
+    word_counter = Counter(filtered_words) 
+    
+    sorted_keywords = sorted(word_counter.items(), key=lambda x: x[1], reverse=True)
+
+    # Get the top 20 keywords with counts
+    top_keywords = sorted_keywords[:]
+
+    # Append data to the keyword_data list
+    for keyword, count in top_keywords:
+        yt_data_titles_wc.append([keyword, count])
+        
+    yt_df_titles_wc = pd.DataFrame(yt_data_titles_wc, columns=["Keyword", "Count"])
+    
+    yt_df_titles_wc = yt_df_titles_wc.groupby('Keyword').agg({'Count': 'sum'})
+    yt_df_titles_wc['Count'] = yt_df_titles_wc['Count'].astype('int')
+    # Reset the index and sort by 'Count'
+    yt_df_titles_wc = yt_df_titles_wc.reset_index().sort_values(by='Count',ascending =False)
+    request.session['yt_df_titles_wc'] = yt_df_titles_wc.to_dict(orient='records')
+
+    
+    print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+    print(yt_df_titles_wc)
+    
+   
+    wc_word_list = yt_df_titles_wc.iloc[0:9,:].to_dict(orient='records')
+
+
+    # Generate the WordCloud image and get the base64 encoding
+    wordcloud_image_yt_titles_wc = generate_wordcloud_image(yt_df_titles_wc)
+    
+    Avg_Views = channel_details['Avg_Views'][0]
     return render(request,"sentiment_analysis.html",
-                  {'image':image,
+                  {'wordcloud_image_yt_sen_wc':wordcloud_image_yt_sen_wc,
+                   'wordcloud_image_yt_titles_wc':wordcloud_image_yt_titles_wc,
                    'df_yt_titles':df_yt_titles,
-                   'yt_url':yt_url,
+                   'yt_url':channel_id,
                    'df_yt_comments':df_yt_comments,
-                   'channel_name':channel_name,
-                   'join_date':join_date,
-                   'subscribers':subscribers,
-                   'num_videos':num_videos,
-                   'num_views':num_views,
-                   'avg_n_v':avg_n_v,
-                   'country':country,
+                   'channel_name':channel_details['Channel_Name'][0],
+                   'join_date':channel_details['Joined_Date'][0],
+                   'subscribers':channel_details['Subscribers'][0],
+                   'num_videos':channel_details['Total_No_Videos'][0],
+                   'num_views':channel_details['Total_Views'][0],
+                   'avg_n_v':Avg_Views,
+                   'country':channel_details['Country'][0],
                    'p_count':p_count,
                    'neg_count':neg_count,
                    'neu_count':neu_count,
@@ -926,22 +960,34 @@ def proceed_sentiments(request):
         text_passed = request.POST.get('text_or_par')
         print(text_passed)
         
-        
-        
-        seperated_sentences  = separate_into_sentences(text_passed)
-        
-        for i, sentence in enumerate(seperated_sentences, start=1):
-            print(f"Sentence {i}: {sentence}")
+        if text_passed:           
+            seperated_sentences  = separate_into_sentences(text_passed)
             
-        data_sentences = {'Comments': seperated_sentences, 'Sentiment': ''}
-        df_sentences = pd.DataFrame(data_sentences)
-        
-        df_comments_txt,top_positive_sent,top_negative_sent = sentiment_model(df_sentences)
+            for i, sentence in enumerate(seperated_sentences, start=1):
+                print(f"Sentence {i}: {sentence}")
+                
+            data_sentences = {'Comments': seperated_sentences, 'Sentiment': ''}
+            df_sentences = pd.DataFrame(data_sentences)
+            
+            df_comments_txt,top_positive_sent,top_negative_sent = sentiment_model(df_sentences)
+            
+        else:
+            return render(request, 'sentiment_analysis.html', {'error_message': 'Field should not be empty!'})
+
         
     df_comments_txt_copy = df_comments_txt.iloc[:5,:].to_dict(orient='records')
     full_data_sentiments = df_comments_txt
     print('======================')
     print(df_comments_txt)
+    
+    df_comments_txt_db = df_comments_txt.copy()
+    
+    
+    for index, row in df_comments_txt_db.iterrows():
+        sentimens_comments_instance, created = sentiments_comments.objects.get_or_create(Sentence=row['Sentence'], Sentiment=row['Sentiment'])
+
+        sentimens_comments_instance.save()
+
     df_comments_txt = df_comments_txt['Sentiment'].value_counts().reset_index()
 
     print(df_comments_txt)
@@ -1085,16 +1131,17 @@ def history(request):
     # Fetch data from the keyword_count_data and youtube_comments tables
     keyword_data = keyword_count_data.objects.all()
     yt_comments_data = youtube_comments.objects.all()
+    sentiments_comments_data = sentiments_comments.objects.all()
 
     # Convert querysets to lists or dictionaries based on your requirement
     keyword_data_list = list(keyword_data.values())
     yt_comments_data_list = list(yt_comments_data.values())
-
+    sentiments_comments_list = list(sentiments_comments_data.values())
     # Pass the data to the template
-    return render(request, "history.html", {'keyword_data': keyword_data_list, 'yt_comments_data': yt_comments_data_list})
+    return render(request, "history.html", {'keyword_data': keyword_data_list, 'yt_comments_data': yt_comments_data_list, 'sentiments_comments_data':sentiments_comments_list})
 
 from django.http import JsonResponse
-from .models import keyword_count_data, youtube_comments
+from .models import keyword_count_data, youtube_comments,sentiments_comments
 
 def clear_history_view(request):
     # Clear records from the keyword_count_data table
@@ -1102,6 +1149,9 @@ def clear_history_view(request):
 
     # Clear records from the youtube_comments table
     youtube_comments.objects.all().delete()
+    
+    
+    sentiments_comments.objects.all().delete()
 
     return JsonResponse({'status': 'History cleared successfully'})
 
