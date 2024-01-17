@@ -64,6 +64,14 @@ from datetime import datetime
 from django.shortcuts import render
 from .models import keyword_count_data, youtube_comments,sentiments_comments
 
+
+from googleapiclient.discovery import build
+import pandas as pd
+from googleapiclient.errors import HttpError
+from googleapiclient.discovery import build
+import pandas as pd
+from googleapiclient.errors import HttpError
+
 def currentdtt (request):
     current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     #return render_template('index.html', current_datetime=current_datetime)
@@ -438,12 +446,6 @@ def sentiment_model(df_comments):
     
     return output_df,top_positive_comments,top_negative_comments
 
-from googleapiclient.discovery import build
-import pandas as pd
-from googleapiclient.errors import HttpError
-from googleapiclient.discovery import build
-import pandas as pd
-from googleapiclient.errors import HttpError
 
 
 def get_channel_info(youtube, channel_id):
