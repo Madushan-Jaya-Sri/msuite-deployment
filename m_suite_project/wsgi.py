@@ -16,3 +16,6 @@ settings_module = 'm_suite_project.deployment' if 'WEBSITE_HOSTNAME' in os.envir
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', settings_module)
 
 application = get_wsgi_application()
+
+# for vercel deployment
+app = application
