@@ -29,7 +29,7 @@ SECRET_KEY = 'django-insecure-vacmh$jfida*5f40nbhtf7@yus59ml@ryeh40%qtz04oki%lqd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 #for vercel deployment
 #ALLOWED_HOSTS = ['.vercel.app']
@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'm_suite_project.urls'
@@ -155,3 +156,13 @@ STATICFILES_DIRS = [
 
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STORAGES = {
+    "default": {
+        "BACKEND":"django.core.files.storage.FileSystemStorage",
+        
+    },
+    "staticfiles":{
+        "BACKEND":"whitenoise.storage.CompressedManifestStaticFileStorage"
+    }
+        }
