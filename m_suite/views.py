@@ -22,6 +22,12 @@ from urllib.parse import urlparse, urljoin
 # Natural Language Processing
 import re
 import nltk
+
+
+import ssl
+
+# Disable SSL certificate verification
+ssl._create_default_https_context = ssl._create_unverified_context
 from nltk.corpus import stopwords
 nltk.download('stopwords')
 from collections import Counter
